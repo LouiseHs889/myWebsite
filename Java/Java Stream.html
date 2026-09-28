@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  
+  <title>Hexo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="description" content="Java Stream當我開始接觸物聯網（IoT）相關資料後，發現 Java Stream API 中的一些操作在資料處理上非常實用。原本需要透過多層  for 迴圈與暫存變數才能完成的處理流程，透過 Stream 可以用較簡潔的方式表達，也能讓程式的意圖更加清楚。 實務上，IoT 系統經常會從資料庫撈取大量設備、感測器或歷史紀錄，再針對查詢結果進行後續的資料處理。因此，以下的例子會以「從資料庫取">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Hexo">
+<meta property="og:url" content="https://louisehs889.github.io/myWebsite/Java/Java%20Stream.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="Java Stream當我開始接觸物聯網（IoT）相關資料後，發現 Java Stream API 中的一些操作在資料處理上非常實用。原本需要透過多層  for 迴圈與暫存變數才能完成的處理流程，透過 Stream 可以用較簡潔的方式表達，也能讓程式的意圖更加清楚。 實務上，IoT 系統經常會從資料庫撈取大量設備、感測器或歷史紀錄，再針對查詢結果進行後續的資料處理。因此，以下的例子會以「從資料庫取">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2026-09-28T14:35:50.652Z">
+<meta property="article:modified_time" content="2026-09-28T14:35:42.437Z">
+<meta property="article:author" content="Louise Hsu">
+<meta name="twitter:card" content="summary">
+  
+    <link rel="alternate" href="/myWebsite/atom.xml" title="Hexo" type="application/atom+xml">
+  
+  
+    <link rel="shortcut icon" href="/myWebsite/favicon.png">
+  
+  
+  
+<link rel="stylesheet" href="/myWebsite/css/style.css">
+
+  
+    
+<link rel="stylesheet" href="/myWebsite/fancybox/jquery.fancybox.min.css">
+
+  
+  
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fork-awesome@1.2.0/css/fork-awesome.min.css">
+
+<meta name="generator" content="Hexo 8.1.2"></head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/myWebsite/" id="logo">Hexo</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"><span class="fa fa-bars"></span></a>
+        
+          <a class="main-nav-link" href="/myWebsite/">Home</a>
+        
+          <a class="main-nav-link" href="/myWebsite/archives/">Archives</a>
+        
+          <a class="main-nav-link" href="/myWebsite/About/">About</a>
+        
+          <a class="main-nav-link" href="/myWebsite/Java/">Java</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+        
+          <a class="nav-icon" href="/myWebsite/atom.xml" title="RSS Feed"><span class="fa fa-rss"></span></a>
+        
+        <a class="nav-icon nav-search-btn" title="Search"><span class="fa fa-search"></span></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="https://louisehs889.github.io/myWebsite"></form>
+      </div>
+    </div>
+  </div>
+</header>
+
+      <div class="outer">
+        <section id="main"><article id="page-" class="h-entry article article-type-page" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/myWebsite/Java/Java%20Stream.html" class="article-date">
+  <time class="dt-published" datetime="2026-09-28T14:35:50.652Z" itemprop="datePublished">2026-09-28</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <h1 id="Java-Stream"><a href="#Java-Stream" class="headerlink" title="Java Stream"></a>Java Stream</h1><p>當我開始接觸物聯網（IoT）相關資料後，發現 Java Stream API 中的一些操作在資料處理上非常實用。原本需要透過多層  for 迴圈與暫存變數才能完成的處理流程，透過 Stream 可以用較簡潔的方式表達，也能讓程式的意圖更加清楚。</p>
+<p>實務上，IoT 系統經常會從資料庫撈取大量設備、感測器或歷史紀錄，再針對查詢結果進行後續的資料處理。因此，以下的例子會以「從資料庫取得資料後，再使用 Stream 進行處理」作為主要情境。</p>
+<h3 id="1-filter-map"><a href="#1-filter-map" class="headerlink" title="1. filter　&amp;　map"></a>1. filter　&amp;　map</h3><p><strong>filter</strong>:    filter() 的用途是<strong>根據條件篩選資料</strong>，只保留符合條件的元素。<strong>資料庫可以有效處理的篩選條件，優先考慮放在 SQL；取得資料後的 Java 物件處理，則可以使用 Stream 的 filter() 。</strong></p>
+<p><strong>map:</strong>    </p>
+<p>它跟 Java 的 Map&lt;K,V&gt;不一樣，剛開始寫的時候我也被這兩個搞混了一段時間。</p>
+<p>map() 的核心概念是一對一的資料轉換，也就是：<strong>Stream 裡的每一筆資料，要轉換成什麼？</strong></p>
+<p>例如，從資料庫撈出的資料通常會包含很多欄位，但後續處理時不一定需要全部欄位。如果需要將資料轉換成 DTO，就可以透過 map() 進行轉換。</p>
+<p>除了 DTO 轉換之外，如果只需要每筆資料中的某個欄位，也可以使用 map() 取出來；或者想對某個欄位的值進行統一轉換，例如將數值全部加上某個數值，也可以使用 map() 。</p>
+<ul>
+<li>Map&lt;k,v&gt;：Java 中的資料結構，用來儲存 Key-Value 關係。</li>
+<li>Stream 的 map()：用來<strong>將 Stream 中的每一個元素轉換成另一個元素</strong>。</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">List</span>&lt;Task&gt; <span class="variable">tasks</span> <span class="operator">=</span> taskService.searchTasks(<span class="string">&quot;Statement&quot;</span>);</span><br><span class="line">            <span class="type">List</span> <span class="variable">dtoList</span> <span class="operator">=</span> tasks.stream()</span><br><span class="line">                    .filter(task -&gt; task.getDescription().contains(<span class="string">&quot;Statement&quot;</span>))     <span class="comment">// 記憶體過濾</span></span><br><span class="line">                    .map(user -&gt; <span class="keyword">new</span> <span class="title class_">TaskDTO</span>(user.getId(), user.getDescription()))   <span class="comment">// 轉成 DTO</span></span><br><span class="line">                    .toList();</span><br><span class="line">            dtoList.forEach(dto -&gt; System.out.println(dto));</span><br></pre></td></tr></table></figure>
+
+<p>TaskDTO{user_id&#x3D;7, description&#x3D;’Statement of Cash Flows’}<br>TaskDTO{user_id&#x3D;9, description&#x3D;’Financial Statements’}<br>TaskDTO{user_id&#x3D;11, description&#x3D;’Income Statement’}<br>TaskDTO{user_id&#x3D;12, description&#x3D;’Statement of Cash Flows’}<br>TaskDTO{user_id&#x3D;15, description&#x3D;’Financial Statements’}<br>TaskDTO{user_id&#x3D;16, description&#x3D;’Statement of Cash Flows’}<br>TaskDTO{user_id&#x3D;18, description&#x3D;’Income Statement’}<br>TaskDTO{user_id&#x3D;20, description&#x3D;’Financial Statements’}<br>TaskDTO{user_id&#x3D;22, description&#x3D;’Financial Statements’}<br>TaskDTO{user_id&#x3D;23, description&#x3D;’Income Statement’}</p>
+<h3 id="2-reduce"><a href="#2-reduce" class="headerlink" title="2. reduce"></a>2. reduce</h3><p>把 Stream 裡的「多筆資料」逐步合併成「一個結果」</p>
+<p>常見的寫法：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">stream.reduce(初始值, (累積值, 目前值) -&gt; 新的累積值);</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">int</span> <span class="variable">totalLength</span> <span class="operator">=</span> tasks.parallelStream()</span><br><span class="line">                   .filter(task-&gt;task.getDescription().contains(<span class="string">&quot;Statement&quot;</span>))</span><br><span class="line">                   .map(Task::getDescription)</span><br><span class="line">                   .reduce(<span class="number">0</span>,(acc,str)-&gt;acc+str.length(),Integer::sum);</span><br><span class="line"></span><br><span class="line">           System.out.println(<span class="string">&quot;totalLength: &quot;</span>+totalLength);</span><br></pre></td></tr></table></figure>
+
+<p>totalLength: 197</p>
+<h3 id="3-groupingBy"><a href="#3-groupingBy" class="headerlink" title="3. groupingBy"></a>3. groupingBy</h3><p>把 Stream 中的資料，按照某個條件分組，最後產生一個 Map。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">Map</span>&lt;String,Long&gt; <span class="variable">result</span> <span class="operator">=</span> tasks.stream()</span><br><span class="line">                   .filter(task-&gt;task.getDescription().contains(<span class="string">&quot;Statement&quot;</span>))</span><br><span class="line">                   .map(Task::getDescription)</span><br><span class="line">                   .collect(Collectors.groupingBy(Function.identity(),Collectors.counting()));</span><br><span class="line">           System.out.println(<span class="string">&quot;result : &quot;</span>+result);</span><br></pre></td></tr></table></figure>
+
+<p>result : {Financial Statements&#x3D;4, Statement of Cash Flows&#x3D;3, Income Statement&#x3D;3}</p>
+<h3 id="4-distinct"><a href="#4-distinct" class="headerlink" title="4. distinct"></a>4. distinct</h3><p>將得到的資料去除重複</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">List</span>&lt;String&gt; <span class="variable">distinctResult</span> <span class="operator">=</span>tasks.stream()</span><br><span class="line">                    .filter(task-&gt;task.getDescription().contains(<span class="string">&quot;Statement&quot;</span>))</span><br><span class="line">                    .map(Task::getDescription)</span><br><span class="line">                    .distinct()</span><br><span class="line">                    .toList();</span><br><span class="line">            System.out.println(<span class="string">&quot;distinct result:　&quot;</span>+distinctResult);</span><br></pre></td></tr></table></figure>
+
+<p>distinct result:　[Statement of Cash Flows, Financial Statements, Income Statement]</p>
+<h3 id="5-sorted"><a href="#5-sorted" class="headerlink" title="5. sorted"></a>5. sorted</h3><p>排序:</p>
+<p>以下為根據description 的長度進行排序，預設是由小到大(a. 的作法)</p>
+<p>如果想要由大到小排序就加上 .reversed() ( b. 的作法)</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// a.</span></span><br><span class="line"><span class="type">List</span>&lt;String&gt; <span class="variable">sortResult</span> <span class="operator">=</span> tasks.stream()</span><br><span class="line">                    .map(Task::getDescription)</span><br><span class="line">                    .sorted(Comparator.comparing(String::length))</span><br><span class="line">                    .distinct()</span><br><span class="line">                    .toList();</span><br><span class="line">            System.out.println(<span class="string">&quot;sortResult: &quot;</span>+sortResult);</span><br><span class="line"><span class="comment">// b.</span></span><br><span class="line"><span class="type">List</span>&lt;String&gt; <span class="variable">sortResult</span> <span class="operator">=</span> tasks.stream()</span><br><span class="line">                    .map(Task::getDescription)</span><br><span class="line">                    .sorted(Comparator.comparing(String::length).reversed())</span><br><span class="line">                    .distinct()</span><br><span class="line">                    .toList();</span><br><span class="line">            System.out.println(<span class="string">&quot;sortResult: &quot;</span>+sortResult);</span><br></pre></td></tr></table></figure>
+
+<ol>
+<li>sortResult: [Income Statement, Financial Statements, Statement of Cash Flows]</li>
+</ol>
+<p>  b.   reverseSortResult: [Statement of Cash Flows, Financial Statements, Income Statement]</p>
+<h3 id="6-flatMap"><a href="#6-flatMap" class="headerlink" title="6. flatMap"></a>6. flatMap</h3><p>flapMap() 可以理解成：</p>
+<blockquote>
+<p><strong>把「一個元素可以產生多個元素」的資料攤平（flatten）。</strong></p>
+</blockquote>
+<p>這個操作在處理一個欄位中包含多個資料時特別實用。</p>
+<p>例如，假設從資料庫取得的 description 可能是一個包含空格的字串：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">&quot;Statement of Cash Flows&quot;</span><br><span class="line">&quot;Financial Statements&quot;</span><br><span class="line">&quot;Income Statement&quot;</span><br></pre></td></tr></table></figure>
+
+<p>如果使用 map()  將每一個 description 透過空白拆開：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">List&lt;String[]&gt; result = tasks.stream()</span><br><span class="line">        .map(task -&gt; task.getDescription().split(&quot;\\s+&quot;))</span><br><span class="line">        .toList();</span><br></pre></td></tr></table></figure>
+
+<p>會得到類似：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">[</span><br><span class="line">    [&quot;Statement&quot;, &quot;of&quot;, &quot;Cash&quot;, &quot;Flows&quot;],</span><br><span class="line">    [&quot;Financial&quot;, &quot;Statements&quot;],</span><br><span class="line">    [&quot;Income&quot;, &quot;Statement&quot;]</span><br><span class="line">]</span><br></pre></td></tr></table></figure>
+
+<p>型別是：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">List&lt;String[]&gt;</span><br></pre></td></tr></table></figure>
+
+<p>但如果今天我想要的是：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[Statement, of, Cash, Flows, Financial, Statements, Income, Statement]</span><br></pre></td></tr></table></figure>
+
+<p>也就是將所有拆開後的單字全部攤平成同一個 Stream，就可以使用 <code>flatMap()</code>：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">List&lt;String&gt; result = tasks.stream()</span><br><span class="line">        .map(Task::getDescription)</span><br><span class="line">        .flatMap(description -&gt;</span><br><span class="line">                Arrays.stream(description.split(&quot;\\s+&quot;))</span><br><span class="line">        )</span><br><span class="line">        .toList();</span><br></pre></td></tr></table></figure>
+
+<p>原本：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">&quot;Statement of Cash Flows&quot;</span><br><span class="line">        ↓ split</span><br><span class="line">[&quot;Statement&quot;, &quot;of&quot;, &quot;Cash&quot;, &quot;Flows&quot;]</span><br><span class="line"></span><br><span class="line">&quot;Financial Statements&quot;</span><br><span class="line">        ↓ split</span><br><span class="line">[&quot;Financial&quot;, &quot;Statements&quot;]</span><br><span class="line"></span><br><span class="line">&quot;Income Statement&quot;</span><br><span class="line">        ↓ split</span><br><span class="line">[&quot;Income&quot;, &quot;Statement&quot;]</span><br></pre></td></tr></table></figure>
+
+<p>經過 <code>flatMap()</code> 後：[Statement, of, Cash, Flows, Financial, Statements,Income, Statement]</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">List</span>&lt;String&gt; <span class="variable">flatMapresult</span> <span class="operator">=</span> tasks.stream()</span><br><span class="line">                    .map(Task::getDescription)</span><br><span class="line">                    .flatMap(description -&gt; Arrays.stream(description.split(<span class="string">&quot;\\s+&quot;</span>)))</span><br><span class="line">                    .distinct()</span><br><span class="line">                    .toList();</span><br><span class="line">            System.out.println(<span class="string">&quot;flat map result: &quot;</span>+flatMapresult);</span><br></pre></td></tr></table></figure>
+
+<p>flat map result: [Statement, of, Cash, Flows, Financial, Statements, Income]</p>
+<h3 id="7-Turn-to-Map"><a href="#7-Turn-to-Map" class="headerlink" title="7. Turn to Map"></a>7. Turn to Map</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">Map</span> <span class="variable">mapResult</span> <span class="operator">=</span> tasks.stream()</span><br><span class="line">                    .filter(task -&gt; task.getDescription() != <span class="literal">null</span> &amp;&amp; task.getDescription().contains(<span class="string">&quot;Statement&quot;</span>))</span><br><span class="line">                    .collect(Collectors.toMap(</span><br><span class="line">                            Task::getDescription,</span><br><span class="line">                            Task::getTitle,</span><br><span class="line">                            (existing, replacement) -&gt; existing <span class="comment">// 遇到 Key 重複時，保留原本的 existing</span></span><br><span class="line">                    ));</span><br><span class="line"></span><br><span class="line">            System.out.println(<span class="string">&quot;mapResult : &quot;</span>+mapResult);</span><br></pre></td></tr></table></figure>
+
+<p>mapResult : {Financial Statements&#x3D;Financial, Statement of Cash Flows&#x3D;Cash Flows, Income Statement&#x3D;Income}</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">Map</span> <span class="variable">mapTitleResult</span> <span class="operator">=</span> tasks.stream()</span><br><span class="line">                    .filter(task -&gt; task.getDescription() != <span class="literal">null</span> &amp;&amp; task.getDescription().contains(<span class="string">&quot;Statement&quot;</span>))</span><br><span class="line">                    .collect(Collectors.groupingBy(Task::getDescription,Collectors.counting()));</span><br><span class="line"></span><br><span class="line">            System.out.println(<span class="string">&quot;mapTitleResult : &quot;</span>+mapTitleResult);</span><br></pre></td></tr></table></figure>
+
+<p>mapTitleResult : {Financial Statements&#x3D;4, Statement of Cash Flows&#x3D;3, Income Statement&#x3D;3}</p>
+<h3 id="我怎麼選-Stream-function"><a href="#我怎麼選-Stream-function" class="headerlink" title="我怎麼選 Stream function"></a>我怎麼選 Stream function</h3><p>filter    → 我想留下哪些資料？<br>map       → 每筆資料要轉換成什麼？<br>reduce    → 多筆資料最後要合成什麼？<br>groupingBy→ 我要按照什麼條件分組？<br>sorted    → 我要按照什麼條件排序？<br>flatMap   → 一筆資料拆成多筆後，我想把它們攤平</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://louisehs889.github.io/myWebsite/Java/Java%20Stream.html" data-id="cuidyJSktIqyMvMZII3PuKiC0" data-title="" class="article-share-link"><span class="fa fa-share">Share</span></a>
+      
+      
+      
+    </footer>
+  </div>
+  
+    
+  
+</article>
+
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+
+  
+    
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/myWebsite/archives/2026/09/">September 2026</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/myWebsite/2026/09/20/hello-world/">Hello World</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      
+      &copy; 2026 Louise Hsu<br>
+      Powered by <a href="https://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/myWebsite/" class="mobile-nav-link">Home</a>
+  
+    <a href="/myWebsite/archives/" class="mobile-nav-link">Archives</a>
+  
+    <a href="/myWebsite/About/" class="mobile-nav-link">About</a>
+  
+    <a href="/myWebsite/Java/" class="mobile-nav-link">Java</a>
+  
+</nav>
+    
+
+
+<script src="/myWebsite/js/jquery-3.6.4.min.js"></script>
+
+
+
+  
+<script src="/myWebsite/fancybox/jquery.fancybox.min.js"></script>
+
+
+
+
+<script src="/myWebsite/js/script.js"></script>
+
+
+
+
+
+  </div>
+</body>
+</html>

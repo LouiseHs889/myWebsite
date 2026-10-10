@@ -101,7 +101,7 @@
     
     <div class="e-content article-entry" itemprop="articleBody">
       
-        <h1 id="Docker"><a href="#Docker" class="headerlink" title="Docker"></a>Docker</h1><h4 id="使用Docker-的目的"><a href="#使用Docker-的目的" class="headerlink" title="使用Docker 的目的:"></a><strong>使用Docker 的目的:</strong></h4><p>在開發的時候，常常明明在自己的電腦上面可以正常運行，但部屬到公司或是其他環境後，可能因為 JAVA 的版本不同、套件或是對方的電腦環境設定不同而出現錯誤，Docker 可以幫助我們降低這類環境差異所造成的問題。它將程式與所需的執行環境封裝在 Image 中，讓程式可以以較一致的方式執行。</p>
+        <h4 id="使用Docker-的目的"><a href="#使用Docker-的目的" class="headerlink" title="使用Docker 的目的:"></a><strong>使用Docker 的目的:</strong></h4><p>在開發的時候，常常明明在自己的電腦上面可以正常運行，但部屬到公司或是其他環境後，可能因為 JAVA 的版本不同、套件或是對方的電腦環境設定不同而出現錯誤，Docker 可以幫助我們降低這類環境差異所造成的問題。它將程式與所需的執行環境封裝在 Image 中，讓程式可以以較一致的方式執行。</p>
 <p>以下將以 Java 專案為例，透過實際操作，完整介紹如何將 Java 應用程式部署到 Docker Container（容器）中。</p>
 <h4 id="整體流程"><a href="#整體流程" class="headerlink" title="整體流程:"></a>整體流程:</h4><p>先產生JAR 檔⇒透過Dockerfile 建立 docker image ⇒使用docker run 產生並執行 docker container。</p>
 <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">Spring Boot 專案</span><br><span class="line">      ↓</span><br><span class="line">Dockerfile</span><br><span class="line">      ↓</span><br><span class="line">Docker Image</span><br><span class="line">      ↓</span><br><span class="line">Container</span><br><span class="line">      ↓</span><br><span class="line">Port Mapping</span><br><span class="line">      ↓</span><br><span class="line">瀏覽器 / API Client</span><br></pre></td></tr></table></figure>
@@ -157,7 +157,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://louisehs889.github.io/myWebsite/2026/10/10/Docker/" data-id="cuidxTrEpJ-4qQ4R9nJ5BgKjB" data-title="Docker" class="article-share-link"><span class="fa fa-share">Share</span></a>
+      <a data-url="https://louisehs889.github.io/myWebsite/2026/10/10/Docker/" data-id="cuideojd2gDX170-Mntaml_Ve" data-title="Docker" class="article-share-link"><span class="fa fa-share">Share</span></a>
       
       
       
@@ -195,7 +195,7 @@
     
     <div class="e-content article-entry" itemprop="articleBody">
       
-        <h1 id="Java-Stream"><a href="#Java-Stream" class="headerlink" title="Java Stream"></a>Java Stream</h1><p>當我開始接觸物聯網（IoT）相關資料後，發現 Java Stream API 中的一些操作在資料處理上非常實用。原本需要透過多層  for 迴圈與暫存變數才能完成的處理流程，透過 Stream 可以用較簡潔的方式表達，也能讓程式的意圖更加清楚。</p>
+        <p>當我開始接觸物聯網（IoT）相關資料後，發現 Java Stream API 中的一些操作在資料處理上非常實用。原本需要透過多層  for 迴圈與暫存變數才能完成的處理流程，透過 Stream 可以用較簡潔的方式表達，也能讓程式的意圖更加清楚。</p>
 <p>實務上，IoT 系統經常會從資料庫撈取大量設備、感測器或歷史紀錄，再針對查詢結果進行後續的資料處理。因此，以下的例子會以「從資料庫取得資料後，再使用 Stream 進行處理」作為主要情境。</p>
 <h3 id="1-filter-map"><a href="#1-filter-map" class="headerlink" title="1. filter　&amp;　map"></a>1. filter　&amp;　map</h3><p><strong>filter</strong>:    filter() 的用途是<strong>根據條件篩選資料</strong>，只保留符合條件的元素。<strong>資料庫可以有效處理的篩選條件，優先考慮放在 SQL；取得資料後的 Java 物件處理，則可以使用 Stream 的 filter() 。</strong></p>
 <p><strong>map:</strong>    </p>
@@ -275,7 +275,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://louisehs889.github.io/myWebsite/2026/09/28/Java%20Stream/" data-id="cuidBAvwKZh92Vb5W-6vUQWUP" data-title="Java Stream" class="article-share-link"><span class="fa fa-share">Share</span></a>
+      <a data-url="https://louisehs889.github.io/myWebsite/2026/09/28/Java%20Stream/" data-id="cuidwp8JBMVehE2C4MxMnYcFb" data-title="Java Stream" class="article-share-link"><span class="fa fa-share">Share</span></a>
       
       
       
@@ -326,7 +326,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://louisehs889.github.io/myWebsite/2026/09/20/hello-world/" data-id="cuidxxCJoJTL_TjbUxqxYxkSn" data-title="Hello World" class="article-share-link"><span class="fa fa-share">Share</span></a>
+      <a data-url="https://louisehs889.github.io/myWebsite/2026/09/20/hello-world/" data-id="cuid6NdvnDRS8j28dgz7Wvw3f" data-title="Hello World" class="article-share-link"><span class="fa fa-share">Share</span></a>
       
       
       

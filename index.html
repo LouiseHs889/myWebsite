@@ -159,7 +159,101 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://louisehs889.github.io/myWebsite/2026/10/10/Docker/" data-id="cuidZ664jA6As7mS6MtaViUOz" data-title="Docker" class="article-share-link"><span class="fa fa-share">Share</span></a>
+      <a data-url="https://louisehs889.github.io/myWebsite/2026/10/10/Docker/" data-id="cuidrMZ9JyNnwX8BtrEFKzeeK" data-title="Docker" class="article-share-link"><span class="fa fa-share">Share</span></a>
+      
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
+    <article id="post-Kubernetes" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/myWebsite/2026/10/10/Kubernetes/" class="article-date">
+  <time class="dt-published" datetime="2026-10-10T05:40:37.000Z" itemprop="datePublished">2026-10-10</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/myWebsite/categories/Docker/">Docker</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="p-name article-title" href="/myWebsite/2026/10/10/Kubernetes/">Docker</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <h4 id="使用Docker-的目的"><a href="#使用Docker-的目的" class="headerlink" title="使用Docker 的目的:"></a><strong>使用Docker 的目的:</strong></h4><p>在開發的時候，常常明明在自己的電腦上面可以正常運行，但部屬到公司或是其他環境後，可能因為 JAVA 的版本不同、套件或是對方的電腦環境設定不同而出現錯誤，Docker 可以幫助我們降低這類環境差異所造成的問題。它將程式與所需的執行環境封裝在 Image 中，讓程式可以以較一致的方式執行。</p>
+<p>以下將以 Java 專案為例，透過實際操作，完整介紹如何將 Java 應用程式部署到 Docker Container（容器）中。</p>
+<h4 id="整體流程"><a href="#整體流程" class="headerlink" title="整體流程:"></a>整體流程:</h4><p>先產生JAR 檔⇒透過Dockerfile 建立 docker image ⇒使用docker run 產生並執行 docker container。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">Spring Boot 專案</span><br><span class="line">      ↓</span><br><span class="line">Dockerfile</span><br><span class="line">      ↓</span><br><span class="line">Docker Image</span><br><span class="line">      ↓</span><br><span class="line">Container</span><br><span class="line">      ↓</span><br><span class="line">Port Mapping</span><br><span class="line">      ↓</span><br><span class="line">瀏覽器 / API Client</span><br></pre></td></tr></table></figure>
+
+<ol>
+<li>先建立一個 spring boot project ( 以下以 maven 打包為例 )</li>
+<li>建立好後先在 project 目錄底下建立一個 Dockerfile</li>
+</ol>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">my-spring-project/</span><br><span class="line">├── src/</span><br><span class="line">├── pom.xml</span><br><span class="line">└── Dockerfile</span><br></pre></td></tr></table></figure>
+
+<ol>
+<li>Dockerfile 內容:</li>
+</ol>
+<figure class="highlight docker"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">FROM</span> eclipse-temurin:<span class="number">17</span>-jdk   </span><br><span class="line"></span><br><span class="line"><span class="keyword">WORKDIR</span><span class="language-bash"> /app   </span></span><br><span class="line"></span><br><span class="line"><span class="keyword">COPY</span><span class="language-bash"> target/*.jar app.jar  </span></span><br><span class="line"></span><br><span class="line"><span class="keyword">ENTRYPOINT</span><span class="language-bash"> [<span class="string">&quot;java&quot;</span>, <span class="string">&quot;-jar&quot;</span>, <span class="string">&quot;app.jar&quot;</span>]</span></span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>FROM eclipse-temurin:17-jdk : 以 java 17 作為這個container image 的基礎</li>
+<li>WORKDIR &#x2F;app : 代表這個 container 裡面的工作目錄</li>
+<li>COPY target&#x2F;*.jar app.jar : copy 專案底下 的 jar 檔到 container 工作目錄底下，這裡的app.jar 不一定要取這個名稱，也可以取其他名字，但要跟下面的 entrypoint 裡面的jar 檔名稱一樣</li>
+<li>ENTRYPOINT [“java”, “-jar”, “app.jar”]  :  Container 啟動時執行：java -jar app.jar</li>
+</ul>
+<ol>
+<li>接下來要先把 spring boot 打包，再放到docker</li>
+</ol>
+<figure class="highlight docker"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">mvn clean (先把 target/ 這個目錄底下的檔案刪掉)</span><br><span class="line"></span><br><span class="line"> </span><br><span class="line">mvn package ( 重新編譯 + 測試 + 打包  產生 target/*.jar )</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<ol>
+<li>建立 Docker Image</li>
+</ol>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker build -t my-docker-test-project .</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>Dockerfile 透過 docker build 這個指令 把他變成 docker image，因此my-spring-app 就是 docker image 的名稱</li>
+<li>這句指令最後的那個 “ .  “ 一定要加上，代表把「目前這個目錄」當作 Docker build context 傳給 Docker。</li>
+<li>Build context &#x3D; Docker 在 docker build 時「可以拿來建 Image 的檔案範圍」</li>
+<li>把目前 my-docker-test-project&#x2F; 當作 Build context ，docker 在 build 的時候可以使用  my-docker-test-project&#x2F; 這個目錄底下的檔案</li>
+<li>copy 能拿的檔案，是以 build context 為範圍，不是以 Dockerfile 所在位置為範圍，所以不能拿build context 這個範圍外的檔案。</li>
+</ul>
+<ol>
+<li>用 Image 建立 Container</li>
+</ol>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker run -p 9090:8080 my-docker-test-project </span><br></pre></td></tr></table></figure>
+
+<p>這時候才真正產生並啟動 Container </p>
+<p>-p 9090:8080  : 意思是自己電腦 9090 port 收到的 request，轉到 Container 的 8080 port </p>
+<p>所以你開 <a target="_blank" rel="noopener" href="http://localhost:8080/hello">http://localhost:9090/hello</a> 就會得到事先建立好的 &#x2F;hello 這個api 對應到的內容</p>
+<p>補充:</p>
+<p>gradle 的話:</p>
+<p>.&#x2F;gradlew clean  會把 build&#x2F;整個刪掉</p>
+<p>.&#x2F;gradlew build:  build&#x2F;libs&#x2F;xxx.jar</p>
+<p>Dockerfile:</p>
+<figure class="highlight docker"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">FROM</span> eclipse-temurin:<span class="number">17</span>-jre</span><br><span class="line"></span><br><span class="line"><span class="keyword">WORKDIR</span><span class="language-bash"> /app</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">COPY</span><span class="language-bash"> build/libs/*.jar app.jar</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">ENTRYPOINT</span><span class="language-bash"> [<span class="string">&quot;java&quot;</span>, <span class="string">&quot;-jar&quot;</span>, <span class="string">&quot;app.jar&quot;</span>]</span></span><br></pre></td></tr></table></figure>
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://louisehs889.github.io/myWebsite/2026/10/10/Kubernetes/" data-id="cuidy2kROdcJbuT7yxiy0cCVY" data-title="Docker" class="article-share-link"><span class="fa fa-share">Share</span></a>
       
       
       
@@ -277,7 +371,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://louisehs889.github.io/myWebsite/2026/09/28/Java%20Stream/" data-id="cuidjLGE2LS4OgFC2X1rpyeY9" data-title="Java Stream" class="article-share-link"><span class="fa fa-share">Share</span></a>
+      <a data-url="https://louisehs889.github.io/myWebsite/2026/09/28/Java%20Stream/" data-id="cuidLp2f8cAZQlcsEswV6LM-b" data-title="Java Stream" class="article-share-link"><span class="fa fa-share">Share</span></a>
       
       
       
@@ -328,7 +422,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://louisehs889.github.io/myWebsite/2026/09/20/hello-world/" data-id="cuidm31_k3T28D15JjeP0wxpp" data-title="Hello World" class="article-share-link"><span class="fa fa-share">Share</span></a>
+      <a data-url="https://louisehs889.github.io/myWebsite/2026/09/20/hello-world/" data-id="cuidmFPzB8brvSp2b29Db7s1v" data-title="Hello World" class="article-share-link"><span class="fa fa-share">Share</span></a>
       
       
       
@@ -379,6 +473,10 @@
         
           <li>
             <a href="/myWebsite/2026/10/10/Docker/">Docker</a>
+          </li>
+        
+          <li>
+            <a href="/myWebsite/2026/10/10/Kubernetes/">Docker</a>
           </li>
         
           <li>

@@ -6,15 +6,15 @@
   
   <title>N+1 問題 | Louise Blog</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-  <meta name="description" content="N+1 問題甚麼是 N+1 問題?原本預期只用一條 SQL 撈資料，執行時卻發現實際發出的 SQL 多了好幾倍，導致載入資料非常耗時。 N+1 指的是：1 條查主表的 SQL，加上 N 條查關聯資料的 SQL。其中 N 是主表查詢回傳的筆數。如果主表有多個 lazy 關聯被存取，數量還會倍增。以下面的範例來說，查出 N 筆 Diagram 會產生 1 + 2N 條 SQL。 怎麼發生的?使用 JP">
+  <meta name="description" content="甚麼是 N+1 問題?原本預期只用一條 SQL 撈資料，執行時卻發現實際發出的 SQL 多了好幾倍，導致載入資料非常耗時。 N+1 指的是：1 條查主表的 SQL，加上 N 條查關聯資料的 SQL。其中 N 是主表查詢回傳的筆數。如果主表有多個 lazy 關聯被存取，數量還會倍增。以下面的範例來說，查出 N 筆 Diagram 會產生 1 + 2N 條 SQL。 怎麼發生的?使用 JPA 查詢時，">
 <meta property="og:type" content="article">
 <meta property="og:title" content="N+1 問題">
 <meta property="og:url" content="https://louisehs889.github.io/myWebsite/2026/10/10/N+1%20problem/index.html">
 <meta property="og:site_name" content="Louise Blog">
-<meta property="og:description" content="N+1 問題甚麼是 N+1 問題?原本預期只用一條 SQL 撈資料，執行時卻發現實際發出的 SQL 多了好幾倍，導致載入資料非常耗時。 N+1 指的是：1 條查主表的 SQL，加上 N 條查關聯資料的 SQL。其中 N 是主表查詢回傳的筆數。如果主表有多個 lazy 關聯被存取，數量還會倍增。以下面的範例來說，查出 N 筆 Diagram 會產生 1 + 2N 條 SQL。 怎麼發生的?使用 JP">
+<meta property="og:description" content="甚麼是 N+1 問題?原本預期只用一條 SQL 撈資料，執行時卻發現實際發出的 SQL 多了好幾倍，導致載入資料非常耗時。 N+1 指的是：1 條查主表的 SQL，加上 N 條查關聯資料的 SQL。其中 N 是主表查詢回傳的筆數。如果主表有多個 lazy 關聯被存取，數量還會倍增。以下面的範例來說，查出 N 筆 Diagram 會產生 1 + 2N 條 SQL。 怎麼發生的?使用 JPA 查詢時，">
 <meta property="og:locale" content="en_US">
 <meta property="article:published_time" content="2026-10-10T05:40:37.000Z">
-<meta property="article:modified_time" content="2026-10-26T06:26:28.270Z">
+<meta property="article:modified_time" content="2026-10-26T06:32:23.636Z">
 <meta property="article:author" content="Louise Hsu">
 <meta name="twitter:card" content="summary">
   
@@ -107,7 +107,7 @@
     
     <div class="e-content article-entry" itemprop="articleBody">
       
-        <h1 id="N-1-問題"><a href="#N-1-問題" class="headerlink" title="N+1 問題"></a>N+1 問題</h1><h3 id="甚麼是-N-1-問題"><a href="#甚麼是-N-1-問題" class="headerlink" title="甚麼是 N+1 問題?"></a>甚麼是 N+1 問題?</h3><p>原本預期只用一條 SQL 撈資料，執行時卻發現實際發出的 SQL 多了好幾倍，導致載入資料非常耗時。</p>
+        <h3 id="甚麼是-N-1-問題"><a href="#甚麼是-N-1-問題" class="headerlink" title="甚麼是 N+1 問題?"></a>甚麼是 N+1 問題?</h3><p>原本預期只用一條 SQL 撈資料，執行時卻發現實際發出的 SQL 多了好幾倍，導致載入資料非常耗時。</p>
 <p>N+1 指的是：1 條查主表的 SQL，加上 N 條查關聯資料的 SQL。其中 N 是主表查詢回傳的筆數。如果主表有多個 lazy 關聯被存取，數量還會倍增。以下面的範例來說，查出 N 筆 Diagram 會產生 1 + 2N 條 SQL。</p>
 <h3 id="怎麼發生的"><a href="#怎麼發生的" class="headerlink" title="怎麼發生的?"></a>怎麼發生的?</h3><p>使用 JPA 查詢時，如果 Entity 中有 @OneToMany（或其他關聯）且 FetchType 為 LAZY，關聯資料不會跟著主表一起載入，而是在第一次被存取時才另外發 SQL。</p>
 <p>如果在 DTO 的建構子中逐筆存取這些 lazy 集合，每一筆主表資料都會各自觸發查詢，就形成了 N+1。</p>
@@ -136,7 +136,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://louisehs889.github.io/myWebsite/2026/10/10/N+1%20problem/" data-id="cuidoI97H7A8gz1GgEfNcNgxz" data-title="N+1 問題" class="article-share-link"><span class="fa fa-share">Share</span></a>
+      <a data-url="https://louisehs889.github.io/myWebsite/2026/10/10/N+1%20problem/" data-id="cuida1txxB-NzQI2Y3XRMYAk6" data-title="N+1 問題" class="article-share-link"><span class="fa fa-share">Share</span></a>
       
       
       
@@ -146,10 +146,19 @@
     
 <nav id="article-nav">
   
+    <a href="/myWebsite/2026/10/10/Docker/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          Docker
+        
+      </div>
+    </a>
   
-    <a href="/myWebsite/2026/10/10/Docker/" id="article-nav-older" class="article-nav-link-wrap">
+  
+    <a href="/myWebsite/2026/09/28/Java%20Stream/" id="article-nav-older" class="article-nav-link-wrap">
       <strong class="article-nav-caption">Older</strong>
-      <div class="article-nav-title">Docker</div>
+      <div class="article-nav-title">Java Stream</div>
     </a>
   
 </nav>
@@ -194,11 +203,11 @@
       <ul>
         
           <li>
-            <a href="/myWebsite/2026/10/10/N+1%20problem/">N+1 問題</a>
+            <a href="/myWebsite/2026/10/10/Docker/">Docker</a>
           </li>
         
           <li>
-            <a href="/myWebsite/2026/10/10/Docker/">Docker</a>
+            <a href="/myWebsite/2026/10/10/N+1%20problem/">N+1 問題</a>
           </li>
         
           <li>

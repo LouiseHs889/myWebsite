@@ -79,73 +79,6 @@
       <div class="outer">
         <section id="main">
   
-    <article id="post-N+1 problem" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
-  <div class="article-meta">
-    <a href="/myWebsite/2026/10/10/N+1%20problem/" class="article-date">
-  <time class="dt-published" datetime="2026-10-10T05:40:37.000Z" itemprop="datePublished">2026-10-10</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/myWebsite/categories/Performance/">Performance</a>
-  </div>
-
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="p-name article-title" href="/myWebsite/2026/10/10/N+1%20problem/">N+1 問題</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="e-content article-entry" itemprop="articleBody">
-      
-        <h1 id="N-1-問題"><a href="#N-1-問題" class="headerlink" title="N+1 問題"></a>N+1 問題</h1><h3 id="甚麼是-N-1-問題"><a href="#甚麼是-N-1-問題" class="headerlink" title="甚麼是 N+1 問題?"></a>甚麼是 N+1 問題?</h3><p>原本預期只用一條 SQL 撈資料，執行時卻發現實際發出的 SQL 多了好幾倍，導致載入資料非常耗時。</p>
-<p>N+1 指的是：1 條查主表的 SQL，加上 N 條查關聯資料的 SQL。其中 N 是主表查詢回傳的筆數。如果主表有多個 lazy 關聯被存取，數量還會倍增。以下面的範例來說，查出 N 筆 Diagram 會產生 1 + 2N 條 SQL。</p>
-<h3 id="怎麼發生的"><a href="#怎麼發生的" class="headerlink" title="怎麼發生的?"></a>怎麼發生的?</h3><p>使用 JPA 查詢時，如果 Entity 中有 @OneToMany（或其他關聯）且 FetchType 為 LAZY，關聯資料不會跟著主表一起載入，而是在第一次被存取時才另外發 SQL。</p>
-<p>如果在 DTO 的建構子中逐筆存取這些 lazy 集合，每一筆主表資料都會各自觸發查詢，就形成了 N+1。</p>
-<p>EX:</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Entity</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Diagram</span> &#123;</span><br><span class="line">    <span class="meta">@Id</span></span><br><span class="line">    <span class="keyword">private</span> Long id;</span><br><span class="line">    <span class="keyword">private</span> String name;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@OneToMany(mappedBy = &quot;diagram&quot;, fetch = FetchType.LAZY)</span></span><br><span class="line">    <span class="keyword">private</span> List&lt;DiagramGroup&gt; diagramGroups;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@OneToMany(mappedBy = &quot;diagram&quot;, fetch = FetchType.LAZY)</span></span><br><span class="line">    <span class="keyword">private</span> List&lt;DiagramRole&gt; diagramRoles;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">@Entity</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">DiagramGroup</span> &#123;</span><br><span class="line">    <span class="meta">@Id</span></span><br><span class="line">    <span class="keyword">private</span> Long id;</span><br><span class="line">    <span class="keyword">private</span> String groupName;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@ManyToOne(fetch = FetchType.LAZY)</span></span><br><span class="line">    <span class="meta">@JoinColumn(name = &quot;diagram_id&quot;)</span></span><br><span class="line">    <span class="keyword">private</span> Diagram diagram;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// DiagramRole 結構相同，欄位是 roleName</span></span><br></pre></td></tr></table></figure>
-
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">DiagramDto</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> Long id;</span><br><span class="line">    <span class="keyword">private</span> String name;</span><br><span class="line">    <span class="keyword">private</span> List&lt;DiagramGroupDto&gt; groups;</span><br><span class="line">    <span class="keyword">private</span> List&lt;DiagramRoleDto&gt; roles;</span><br><span class="line"></span><br><span class="line">    <span class="type">public</span> <span class="title function_">DiagramDto</span><span class="params">(Diagram d)</span> &#123;</span><br><span class="line">        <span class="built_in">this</span>.id = d.getId();</span><br><span class="line">        <span class="built_in">this</span>.name = d.getName();</span><br><span class="line">        <span class="comment">//  問題 1：碰到 lazy 集合 → 每個 Diagram 各發一條 SQL 查 group</span></span><br><span class="line">        <span class="built_in">this</span>.groups = d.getDiagramGroups().stream().map(DiagramGroupDto::<span class="keyword">new</span>).toList();</span><br><span class="line">        <span class="comment">//  問題 2：再碰另一個 lazy 集合 → 每個 Diagram 再各發一條 SQL 查 role</span></span><br><span class="line">        <span class="built_in">this</span>.roles = d.getDiagramRoles().stream().map(DiagramRoleDto::<span class="keyword">new</span>).toList();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Query(&quot;select new com.example.dto.DiagramDto(d) from Diagram d&quot;)</span></span><br><span class="line"><span class="type">List</span>&lt;DiagramDto&gt; <span class="title function_">findAllDto</span><span class="params">()</span>;</span><br></pre></td></tr></table></figure>
-
-<h3 id="解決方法的選擇"><a href="#解決方法的選擇" class="headerlink" title="解決方法的選擇:"></a>解決方法的選擇:</h3><p>Join Fetch:<br>一次把關聯資料 join 進來。但它不能搭配  select new Dto(entity) 這類 constructor expression，同時 fetch 多個  List 集合會拋出 MultipleBagFetchException，搭配分頁也有問題。能不能用，取決於 Entity 和查詢原本的寫法。</p>
-<p>Batch Fetching: </p>
-<p>保留 lazy 特性，但把 N 次查詢合併成少數幾次 IN 查詢，屬於侵入性較低的做法。</p>
-<h3 id="最終我自己的選擇"><a href="#最終我自己的選擇" class="headerlink" title="最終我自己的選擇:"></a>最終我自己的選擇:</h3><p>主表 Entity 中有多個  @OneToMany + LAZY 的欄位，而 DTO 的建構子會直接逐筆讀取這些關聯集合並轉成 List，因此造成 N+1。我嘗試過 Join Fetch 和 Batch Fetching，但在這個情境下都無法順利套用。再加上原本的建構子在很多地方都有被使用，不適合直接修改，所以最後採用以下做法：</p>
-<ol>
-<li>在 DTO 另外寫一個建構子，只接收主表欄位，one-to-many 的欄位先初始化成空的 List。</li>
-<li>先用一條 SQL 查出主表中符合條件的資料。</li>
-<li>收集這些資料的 id，用 IN 查詢一次撈出所有對應的子表資料（group、role 各一條）。</li>
-<li>將子表資料依 diagram_id 分組，填回對應的 DTO。</li>
-</ol>
-<p>這樣不論主表有幾筆，SQL 數量都固定為 1 + 關聯表數量（此例為 3 條）。</p>
-<p>成效：主表約 82 筆，執行時間從 27,640 ms 降到 465 ms，約快了 59 倍。</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 主表：只查需要的欄位</span></span><br><span class="line"><span class="meta">@Query(&quot;select new com.example.dto.DiagramDto(d.id, d.name) from Diagram d&quot;)</span></span><br><span class="line"><span class="type">List</span>&lt;DiagramDto&gt; <span class="title function_">findDiagramDtos</span><span class="params">()</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 子表：一次查出所有關聯資料</span></span><br><span class="line"><span class="meta">@Query(&quot;select new com.example.dto.DiagramGroupDto(g.diagram.id, g.id, g.groupName) &quot; +</span></span><br><span class="line"><span class="meta">       &quot;from DiagramGroup g where g.diagram.id in :ids&quot;)</span></span><br><span class="line"><span class="type">List</span>&lt;DiagramGroupDto&gt; <span class="title function_">findGroupsByDiagramIds</span><span class="params">(<span class="meta">@Param(&quot;ids&quot;)</span> List&lt;Long&gt; ids)</span>;</span><br></pre></td></tr></table></figure>
-
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">List</span>&lt;DiagramDto&gt; <span class="variable">diagrams</span> <span class="operator">=</span> diagramRepo.findDiagramDtos();</span><br><span class="line"><span class="keyword">if</span> (diagrams.isEmpty()) <span class="keyword">return</span> diagrams;</span><br><span class="line"></span><br><span class="line"><span class="type">List</span>&lt;Long&gt; <span class="variable">ids</span> <span class="operator">=</span> diagrams.stream().map(DiagramDto::getId).toList();</span><br><span class="line"></span><br><span class="line"><span class="type">Map</span>&lt;Long, List&lt;DiagramGroupDto&gt;&gt; <span class="variable">groupMap</span> <span class="operator">=</span> groupRepo.findGroupsByDiagramIds(ids).stream()</span><br><span class="line">        .collect(Collectors.groupingBy(DiagramGroupDto::getDiagramId));</span><br><span class="line"><span class="comment">// roles 同理</span></span><br><span class="line"></span><br><span class="line">diagrams.forEach(d -&gt; d.setGroups(groupMap.getOrDefault(d.getId(), List.of())));</span><br></pre></td></tr></table></figure>
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://louisehs889.github.io/myWebsite/2026/10/10/N+1%20problem/" data-id="cuidoI97H7A8gz1GgEfNcNgxz" data-title="N+1 問題" class="article-share-link"><span class="fa fa-share">Share</span></a>
-      
-      
-      
-    </footer>
-  </div>
-  
-</article>
-
-
-
-  
     <article id="post-Docker" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
   <div class="article-meta">
     <a href="/myWebsite/2026/10/10/Docker/" class="article-date">
@@ -228,7 +161,74 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://louisehs889.github.io/myWebsite/2026/10/10/Docker/" data-id="cuidXZRuWnvRl4JFJ3XLS0eer" data-title="Docker" class="article-share-link"><span class="fa fa-share">Share</span></a>
+      <a data-url="https://louisehs889.github.io/myWebsite/2026/10/10/Docker/" data-id="cuidKCOmFAbMMDzdWkwtsy32A" data-title="Docker" class="article-share-link"><span class="fa fa-share">Share</span></a>
+      
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
+    <article id="post-N+1 problem" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/myWebsite/2026/10/10/N+1%20problem/" class="article-date">
+  <time class="dt-published" datetime="2026-10-10T05:40:37.000Z" itemprop="datePublished">2026-10-10</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/myWebsite/categories/Performance/">Performance</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="p-name article-title" href="/myWebsite/2026/10/10/N+1%20problem/">N+1 問題</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <h3 id="甚麼是-N-1-問題"><a href="#甚麼是-N-1-問題" class="headerlink" title="甚麼是 N+1 問題?"></a>甚麼是 N+1 問題?</h3><p>原本預期只用一條 SQL 撈資料，執行時卻發現實際發出的 SQL 多了好幾倍，導致載入資料非常耗時。</p>
+<p>N+1 指的是：1 條查主表的 SQL，加上 N 條查關聯資料的 SQL。其中 N 是主表查詢回傳的筆數。如果主表有多個 lazy 關聯被存取，數量還會倍增。以下面的範例來說，查出 N 筆 Diagram 會產生 1 + 2N 條 SQL。</p>
+<h3 id="怎麼發生的"><a href="#怎麼發生的" class="headerlink" title="怎麼發生的?"></a>怎麼發生的?</h3><p>使用 JPA 查詢時，如果 Entity 中有 @OneToMany（或其他關聯）且 FetchType 為 LAZY，關聯資料不會跟著主表一起載入，而是在第一次被存取時才另外發 SQL。</p>
+<p>如果在 DTO 的建構子中逐筆存取這些 lazy 集合，每一筆主表資料都會各自觸發查詢，就形成了 N+1。</p>
+<p>EX:</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Entity</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Diagram</span> &#123;</span><br><span class="line">    <span class="meta">@Id</span></span><br><span class="line">    <span class="keyword">private</span> Long id;</span><br><span class="line">    <span class="keyword">private</span> String name;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@OneToMany(mappedBy = &quot;diagram&quot;, fetch = FetchType.LAZY)</span></span><br><span class="line">    <span class="keyword">private</span> List&lt;DiagramGroup&gt; diagramGroups;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@OneToMany(mappedBy = &quot;diagram&quot;, fetch = FetchType.LAZY)</span></span><br><span class="line">    <span class="keyword">private</span> List&lt;DiagramRole&gt; diagramRoles;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">@Entity</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">DiagramGroup</span> &#123;</span><br><span class="line">    <span class="meta">@Id</span></span><br><span class="line">    <span class="keyword">private</span> Long id;</span><br><span class="line">    <span class="keyword">private</span> String groupName;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@ManyToOne(fetch = FetchType.LAZY)</span></span><br><span class="line">    <span class="meta">@JoinColumn(name = &quot;diagram_id&quot;)</span></span><br><span class="line">    <span class="keyword">private</span> Diagram diagram;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// DiagramRole 結構相同，欄位是 roleName</span></span><br></pre></td></tr></table></figure>
+
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">DiagramDto</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> Long id;</span><br><span class="line">    <span class="keyword">private</span> String name;</span><br><span class="line">    <span class="keyword">private</span> List&lt;DiagramGroupDto&gt; groups;</span><br><span class="line">    <span class="keyword">private</span> List&lt;DiagramRoleDto&gt; roles;</span><br><span class="line"></span><br><span class="line">    <span class="type">public</span> <span class="title function_">DiagramDto</span><span class="params">(Diagram d)</span> &#123;</span><br><span class="line">        <span class="built_in">this</span>.id = d.getId();</span><br><span class="line">        <span class="built_in">this</span>.name = d.getName();</span><br><span class="line">        <span class="comment">//  問題 1：碰到 lazy 集合 → 每個 Diagram 各發一條 SQL 查 group</span></span><br><span class="line">        <span class="built_in">this</span>.groups = d.getDiagramGroups().stream().map(DiagramGroupDto::<span class="keyword">new</span>).toList();</span><br><span class="line">        <span class="comment">//  問題 2：再碰另一個 lazy 集合 → 每個 Diagram 再各發一條 SQL 查 role</span></span><br><span class="line">        <span class="built_in">this</span>.roles = d.getDiagramRoles().stream().map(DiagramRoleDto::<span class="keyword">new</span>).toList();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Query(&quot;select new com.example.dto.DiagramDto(d) from Diagram d&quot;)</span></span><br><span class="line"><span class="type">List</span>&lt;DiagramDto&gt; <span class="title function_">findAllDto</span><span class="params">()</span>;</span><br></pre></td></tr></table></figure>
+
+<h3 id="解決方法的選擇"><a href="#解決方法的選擇" class="headerlink" title="解決方法的選擇:"></a>解決方法的選擇:</h3><p>Join Fetch:<br>一次把關聯資料 join 進來。但它不能搭配  select new Dto(entity) 這類 constructor expression，同時 fetch 多個  List 集合會拋出 MultipleBagFetchException，搭配分頁也有問題。能不能用，取決於 Entity 和查詢原本的寫法。</p>
+<p>Batch Fetching: </p>
+<p>保留 lazy 特性，但把 N 次查詢合併成少數幾次 IN 查詢，屬於侵入性較低的做法。</p>
+<h3 id="最終我自己的選擇"><a href="#最終我自己的選擇" class="headerlink" title="最終我自己的選擇:"></a>最終我自己的選擇:</h3><p>主表 Entity 中有多個  @OneToMany + LAZY 的欄位，而 DTO 的建構子會直接逐筆讀取這些關聯集合並轉成 List，因此造成 N+1。我嘗試過 Join Fetch 和 Batch Fetching，但在這個情境下都無法順利套用。再加上原本的建構子在很多地方都有被使用，不適合直接修改，所以最後採用以下做法：</p>
+<ol>
+<li>在 DTO 另外寫一個建構子，只接收主表欄位，one-to-many 的欄位先初始化成空的 List。</li>
+<li>先用一條 SQL 查出主表中符合條件的資料。</li>
+<li>收集這些資料的 id，用 IN 查詢一次撈出所有對應的子表資料（group、role 各一條）。</li>
+<li>將子表資料依 diagram_id 分組，填回對應的 DTO。</li>
+</ol>
+<p>這樣不論主表有幾筆，SQL 數量都固定為 1 + 關聯表數量（此例為 3 條）。</p>
+<p>成效：主表約 82 筆，執行時間從 27,640 ms 降到 465 ms，約快了 59 倍。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 主表：只查需要的欄位</span></span><br><span class="line"><span class="meta">@Query(&quot;select new com.example.dto.DiagramDto(d.id, d.name) from Diagram d&quot;)</span></span><br><span class="line"><span class="type">List</span>&lt;DiagramDto&gt; <span class="title function_">findDiagramDtos</span><span class="params">()</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 子表：一次查出所有關聯資料</span></span><br><span class="line"><span class="meta">@Query(&quot;select new com.example.dto.DiagramGroupDto(g.diagram.id, g.id, g.groupName) &quot; +</span></span><br><span class="line"><span class="meta">       &quot;from DiagramGroup g where g.diagram.id in :ids&quot;)</span></span><br><span class="line"><span class="type">List</span>&lt;DiagramGroupDto&gt; <span class="title function_">findGroupsByDiagramIds</span><span class="params">(<span class="meta">@Param(&quot;ids&quot;)</span> List&lt;Long&gt; ids)</span>;</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">List</span>&lt;DiagramDto&gt; <span class="variable">diagrams</span> <span class="operator">=</span> diagramRepo.findDiagramDtos();</span><br><span class="line"><span class="keyword">if</span> (diagrams.isEmpty()) <span class="keyword">return</span> diagrams;</span><br><span class="line"></span><br><span class="line"><span class="type">List</span>&lt;Long&gt; <span class="variable">ids</span> <span class="operator">=</span> diagrams.stream().map(DiagramDto::getId).toList();</span><br><span class="line"></span><br><span class="line"><span class="type">Map</span>&lt;Long, List&lt;DiagramGroupDto&gt;&gt; <span class="variable">groupMap</span> <span class="operator">=</span> groupRepo.findGroupsByDiagramIds(ids).stream()</span><br><span class="line">        .collect(Collectors.groupingBy(DiagramGroupDto::getDiagramId));</span><br><span class="line"><span class="comment">// roles 同理</span></span><br><span class="line"></span><br><span class="line">diagrams.forEach(d -&gt; d.setGroups(groupMap.getOrDefault(d.getId(), List.of())));</span><br></pre></td></tr></table></figure>
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://louisehs889.github.io/myWebsite/2026/10/10/N+1%20problem/" data-id="cuida1txxB-NzQI2Y3XRMYAk6" data-title="N+1 問題" class="article-share-link"><span class="fa fa-share">Share</span></a>
       
       
       
@@ -346,7 +346,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://louisehs889.github.io/myWebsite/2026/09/28/Java%20Stream/" data-id="cuidtDdJ1AYCe85ySfrXEtvi6" data-title="Java Stream" class="article-share-link"><span class="fa fa-share">Share</span></a>
+      <a data-url="https://louisehs889.github.io/myWebsite/2026/09/28/Java%20Stream/" data-id="cuid_ihJLC2mv4gb-6lZuLHls" data-title="Java Stream" class="article-share-link"><span class="fa fa-share">Share</span></a>
       
       
       
@@ -397,7 +397,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://louisehs889.github.io/myWebsite/2026/09/20/hello-world/" data-id="cuidT8ELZaWpGN8x2gxelQ_M2" data-title="Hello World" class="article-share-link"><span class="fa fa-share">Share</span></a>
+      <a data-url="https://louisehs889.github.io/myWebsite/2026/09/20/hello-world/" data-id="cuidxBAFg7PvZ_7KL6HgQVKbE" data-title="Hello World" class="article-share-link"><span class="fa fa-share">Share</span></a>
       
       
       
@@ -447,11 +447,11 @@
       <ul>
         
           <li>
-            <a href="/myWebsite/2026/10/10/N+1%20problem/">N+1 問題</a>
+            <a href="/myWebsite/2026/10/10/Docker/">Docker</a>
           </li>
         
           <li>
-            <a href="/myWebsite/2026/10/10/Docker/">Docker</a>
+            <a href="/myWebsite/2026/10/10/N+1%20problem/">N+1 問題</a>
           </li>
         
           <li>
